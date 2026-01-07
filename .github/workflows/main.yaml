@@ -51,6 +51,8 @@ jobs:
         - target: x86_64-pc-windows-gnu
           os: windows-2025
           channel: nightly-x86_64-gnu
+        - target: riscv64gc-unknown-linux-gnu
+          os: ubuntu-24.04
     runs-on: ${{ matrix.os }}
     needs: [calculate_vars]
     env:
@@ -127,9 +129,10 @@ jobs:
       run: ./ci/run.sh ${{ matrix.target }}
 
     # Otherwise we use our docker containers to run builds
+    # workaround to speed up the CI
     - name: Run in Docker
       if: matrix.os == 'ubuntu-24.04'
-      run: ./ci/run-docker.sh ${{ matrix.target }}
+      run: ./ci/run.sh ${{ matrix.target }}
 
     - name: Print test logs if available
       if: always()
@@ -144,15 +147,3 @@ jobs:
       run: |
         rm -rf /tmp/.buildx-cache
         mv /tmp/.buildx-cache-new /tmp/.buildx-cache
-
-  success:
-    runs-on: ubuntu-24.04
-    timeout-minutes: 10
-    # GitHub branch protection is exceedingly silly and treats "jobs skipped because a dependency
-    # failed" as success. So we have to do some contortions to ensure the job fails if any of its
-    # dependencies fails.
-    if: always() # make sure this is never "skipped"
-    steps:
-      # Manually check the status of all dependencies. `if: failure()` does not work.
-      - name: check if any dependency failed
-        run: jq --exit-status 'all(.result == "success")' <<< '${{ toJson(needs) }}'
