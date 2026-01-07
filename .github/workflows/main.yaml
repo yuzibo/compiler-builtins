@@ -145,3 +145,22 @@ jobs:
       run: |
         rm -rf /tmp/.buildx-cache
         mv /tmp/.buildx-cache-new /tmp/.buildx-cache
+
+  test-riscv64gc-native:
+    name: Build and test (riscv64 native, self-hosted, experimental)
+    runs-on: [self-hosted, linux, riscv64]
+    needs: [calculate_vars]
+    timeout-minutes: 180
+    continue-on-error: true   # non-block on fail
+
+    env:
+      MAY_SKIP_LIBM_CI: ${{ needs.calculate_vars.outputs.may_skip_libm_ci }}
+
+    steps:
+      - name: Print runner info
+        run: |
+          uname -a
+
+      - name: Run native CI entrypoint
+        run: |
+          bash /home/GHA/tank/entrypoint.sh
