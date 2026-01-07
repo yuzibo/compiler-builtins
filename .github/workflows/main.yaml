@@ -163,4 +163,4 @@ jobs:
 
       - name: Run native CI entrypoint
         run: |
-          bash /home/GHA/tank/entrypoint.sh
+          cd /home/jenkins/compiler-builtins && ./ci/run.sh
