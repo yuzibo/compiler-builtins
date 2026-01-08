@@ -147,7 +147,7 @@ jobs:
         mv /tmp/.buildx-cache-new /tmp/.buildx-cache
 
   test-riscv64gc-native:
-    name: Build and test (riscv64 native, self-hosted, experimental)
+    name: Build and test (riscv64gc-unknown-linux-gnu self-hosted, experimental)
     runs-on: [self-hosted, linux, riscv64]
     needs: [calculate_vars]
     timeout-minutes: 180
@@ -157,10 +157,37 @@ jobs:
       MAY_SKIP_LIBM_CI: ${{ needs.calculate_vars.outputs.may_skip_libm_ci }}
 
     steps:
+      - name: checkout code
+        uses: actions/checkout@v4
+        #with:
+          #fetch-depth: 500        
       - name: Print runner info
         run: |
           uname -a
-
-      - name: Run native CI entrypoint
+      - name: Configure Rustup(install rustup)
+        shell: bash
         run: |
-          cd /home/jenkins/compiler-builtins && ./ci/run.sh
+          export RUSTUP_DIST_SERVER=https://mirrors.tuna.tsinghua.edu.cn/rustup
+          channel="nightly"
+          rustup update "$channel" --no-self-update
+          rustup default "$channel"
+
+      - name: Download compiler-rt reference sources
+        shell: bash
+        run: |
+          sed -i 's|https://github.com|https://community-ci.openruyi.cn|g' ./ci/download-compiler-rt.sh 
+          sed -i 's|llvm-project-rustc-${rust_llvm_version}|llvm-project|g' ./ci/download-compiler-rt.sh
+          ./ci/download-compiler-rt.sh
+          echo "RUST_COMPILER_RT_ROOT=$(realpath ./compiler-rt)" >> "$GITHUB_ENV"
+
+      - name: Download musl source
+        run: |
+          sed -i 's|https://github.com/kraj/musl.git|https://community-ci.openruyi.cn/others/kraj-musl.git|g' ./ci/update-musl.sh 
+          ./ci/update-musl.sh
+        shell: bash
+
+      - name: Verify API list
+        run: python3 etc/update-api-list.py --check
+
+      - name: Run locally
+        run: ./ci/run.sh 
