@@ -160,7 +160,7 @@ jobs:
       - name: checkout code
         uses: actions/checkout@v4
         #with:
-          #fetch-depth: 500        
+          #fetch-depth: 500
       - name: Print runner info
         run: |
           uname -a
@@ -171,6 +171,10 @@ jobs:
           channel="nightly"
           rustup update "$channel" --no-self-update
           rustup default "$channel"
+
+      - name: Install cargo-nextest
+        shell: bash
+        run: cargo install cargo-nextest
 
       - name: Download compiler-rt reference sources
         shell: bash
@@ -190,4 +194,4 @@ jobs:
         run: python3 etc/update-api-list.py --check
 
       - name: Run locally
-        run: ./ci/run.sh 
+        run: ./ci/run.sh
