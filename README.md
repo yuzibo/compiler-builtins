@@ -28,4 +28,4 @@ More details are in [LICENSE.txt](LICENSE.txt) and
 
 Test for ci_test \3 \4 \5 \6
 
-k1
+k1 v1
