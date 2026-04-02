@@ -28,4 +28,6 @@ More details are in [LICENSE.txt](LICENSE.txt) and
 
 Test for ci_test \3 \4 \5 \6, 2044
 
+2042-01 v2
+
 k1 v1
