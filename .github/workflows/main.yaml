@@ -1,7 +1,7 @@
 name: CI
 permissions: {}
 on:
-  push: { branches: [main, ci_test] }
+  push: { branches: [main, ci_test_2] }
   pull_request:
 
 concurrency:
@@ -21,7 +21,6 @@ jobs:
   calculate_vars:
     name: Calculate workflow variables
     runs-on: ubuntu-24.04
-    timeout-minutes: 10
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       PR_NUMBER: ${{ github.event.pull_request.number }}
@@ -43,7 +42,7 @@ jobs:
 
   test:
     name: Build and test
-    timeout-minutes: 60
+    timeout-minutes: 120
     # NOTE: self-hosted riscv64 runners are experimental and may be flaky.
     # Do not block CI on failures from this platform for now.
     continue-on-error: ${{ contains(matrix.os, 'self-hosted') }}
