@@ -55,10 +55,10 @@ else
     "${test_builtins[@]}" --release
     "${test_builtins[@]}" --features c
     "${test_builtins[@]}" --features c --release
-    "${test_builtins[@]}" --features no-asm
-    "${test_builtins[@]}" --features no-asm --release
     "${test_builtins[@]}" --benches
     "${test_builtins[@]}" --benches --release
+    "${test_builtins[@]}" --no-default-features
+    "${test_builtins[@]}" --no-default-features --release
 
     # Validate that having a verbatim path for the target directory works
     # (trivial to regress using `/` in paths to build artifacts rather than
@@ -79,12 +79,14 @@ symcheck+=(-- --build-and-check --target "$target")
 # Executable section checks are meaningless on no-std targets
 [[ "$target" == *"-none"* ]] && symcheck+=(--no-os)
 
-"${symcheck[@]}" -- -p compiler_builtins
-"${symcheck[@]}" -- -p compiler_builtins --release
-"${symcheck[@]}" -- -p compiler_builtins --features c
-"${symcheck[@]}" -- -p compiler_builtins --features c --release
-"${symcheck[@]}" -- -p compiler_builtins --features no-asm
-"${symcheck[@]}" -- -p compiler_builtins --features no-asm --release
+# We only need to check the configurations std may use
+symcheck_cb_args=(-- --package compiler_builtins --features compiler-builtins)
+"${symcheck[@]}" "${symcheck_cb_args[@]}"
+"${symcheck[@]}" "${symcheck_cb_args[@]}" --release
+"${symcheck[@]}" "${symcheck_cb_args[@]}" --features c
+"${symcheck[@]}" "${symcheck_cb_args[@]}" --features c --release
+"${symcheck[@]}" "${symcheck_cb_args[@]}" --no-default-features
+"${symcheck[@]}" "${symcheck_cb_args[@]}" --no-default-features --release
 
 run_intrinsics_test() {
     build_args=(--verbose --manifest-path builtins-test-intrinsics/Cargo.toml)
@@ -125,9 +127,6 @@ mflags=()
 
 # We enumerate features manually.
 mflags+=(--no-default-features)
-
-# Enable arch-specific routines when available.
-mflags+=(--features arch)
 
 # Always enable `unstable-float` since it expands available API but does not
 # change any implementations.
@@ -196,15 +195,15 @@ else
     cmd+=(--exclude util --exclude libm-macros)
 
     # Test once with intrinsics enabled
-    "${cmd[@]}" --features unstable-intrinsics
-    "${cmd[@]}" --features unstable-intrinsics --benches
+    "${cmd[@]}" --features arch,unstable-intrinsics
+    "${cmd[@]}" --features arch,unstable-intrinsics --benches
 
     # Test the same in release mode, which also increases coverage. Also ensure
     # the soft float routines are checked.
     "${cmd[@]}" "$profile_flag" release-checked
-    "${cmd[@]}" "$profile_flag" release-checked --features force-soft-floats
-    "${cmd[@]}" "$profile_flag" release-checked --features unstable-intrinsics
-    "${cmd[@]}" "$profile_flag" release-checked --features unstable-intrinsics --benches
+    "${cmd[@]}" "$profile_flag" release-checked --features arch
+    "${cmd[@]}" "$profile_flag" release-checked --features arch,unstable-intrinsics
+    "${cmd[@]}" "$profile_flag" release-checked --features arch,unstable-intrinsics --benches
 
     # Ensure that the routines do not panic.
     #

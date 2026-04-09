@@ -3,7 +3,7 @@
 use libm::support::{CastInto, Float, Int, MinInt};
 
 use crate::domain::get_domain;
-use crate::generate::KnownSize;
+use crate::generate::{KnownSize, product2, product3};
 use crate::run_cfg::{check_near_count, check_point_count};
 use crate::{Arg0, Arg1, Arg2, BaseName, CheckCtx, FloatExt, MathOp, Ty, test_log};
 
@@ -242,9 +242,8 @@ macro_rules! impl_edge_case_input {
             fn get_cases(ctx: &CheckCtx) -> (impl Iterator<Item = Self>, u64) {
                 let (iter0, steps0) = float_edge_cases::<Arg0<Op>>(ctx, 0);
                 let (iter1, steps1) = float_edge_cases::<Arg1<Op>>(ctx, 1);
-                let iter =
-                    iter0.flat_map(move |first| iter1.clone().map(move |second| (first, second)));
-                let count = steps0.checked_mul(steps1).unwrap();
+                let iter = product2(iter0, iter1);
+                let count = steps0.strict_mul(steps1);
                 (iter, count)
             }
         }
@@ -258,16 +257,8 @@ macro_rules! impl_edge_case_input {
                 let (iter1, steps1) = float_edge_cases::<Arg1<Op>>(ctx, 1);
                 let (iter2, steps2) = float_edge_cases::<Arg2<Op>>(ctx, 2);
 
-                let iter = iter0
-                    .flat_map(move |first| iter1.clone().map(move |second| (first, second)))
-                    .flat_map(move |(first, second)| {
-                        iter2.clone().map(move |third| (first, second, third))
-                    });
-                let count = steps0
-                    .checked_mul(steps1)
-                    .unwrap()
-                    .checked_mul(steps2)
-                    .unwrap();
+                let iter = product3(iter0, iter1, iter2);
+                let count = steps0.strict_mul(steps1).strict_mul(steps2);
 
                 (iter, count)
             }
@@ -281,9 +272,8 @@ macro_rules! impl_edge_case_input {
                 let (iter0, steps0) = int_edge_cases(ctx, 0);
                 let (iter1, steps1) = float_edge_cases::<Arg1<Op>>(ctx, 1);
 
-                let iter =
-                    iter0.flat_map(move |first| iter1.clone().map(move |second| (first, second)));
-                let count = steps0.checked_mul(steps1).unwrap();
+                let iter = product2(iter0, iter1);
+                let count = steps0.strict_mul(steps1);
 
                 (iter, count)
             }
@@ -297,9 +287,8 @@ macro_rules! impl_edge_case_input {
                 let (iter0, steps0) = float_edge_cases::<Arg0<Op>>(ctx, 0);
                 let (iter1, steps1) = int_edge_cases(ctx, 1);
 
-                let iter =
-                    iter0.flat_map(move |first| iter1.clone().map(move |second| (first, second)));
-                let count = steps0.checked_mul(steps1).unwrap();
+                let iter = product2(iter0, iter1);
+                let count = steps0.strict_mul(steps1);
 
                 (iter, count)
             }
@@ -334,9 +323,8 @@ macro_rules! impl_edge_case_input_int {
             fn get_cases(ctx: &CheckCtx) -> (impl Iterator<Item = Self>, u64) {
                 let (iter0, steps0) = int_edge_cases(ctx, 0);
                 let (iter1, steps1) = int_edge_cases(ctx, 1);
-                let iter =
-                    iter0.flat_map(move |first| iter1.clone().map(move |second| (first, second)));
-                let count = steps0.checked_mul(steps1).unwrap();
+                let iter = product2(iter0, iter1);
+                let count = steps0.strict_mul(steps1);
                 (iter, count)
             }
         }
@@ -351,9 +339,8 @@ macro_rules! impl_edge_case_input_int {
             fn get_cases(ctx: &CheckCtx) -> (impl Iterator<Item = Self>, u64) {
                 let (iter0, steps0) = int_edge_cases(ctx, 0);
                 let (iter1, steps1) = int_edge_cases(ctx, 1);
-                let iter =
-                    iter0.flat_map(move |first| iter1.clone().map(move |second| (first, second)));
-                let count = steps0.checked_mul(steps1).unwrap();
+                let iter = product2(iter0, iter1);
+                let count = steps0.strict_mul(steps1);
                 (iter, count)
             }
         }

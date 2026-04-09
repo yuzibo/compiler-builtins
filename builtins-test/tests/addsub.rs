@@ -113,7 +113,7 @@ macro_rules! float_sum {
     }
 }
 
-#[cfg(not(x86_no_sse))]
+#[cfg(not(x86_no_sse2))]
 mod float_addsub {
     use super::*;
 
@@ -128,15 +128,15 @@ mod float_addsub {
     }
 
     #[cfg(f128_enabled)]
-    #[cfg(not(x86_no_sse))]
+    #[cfg(not(x86_no_sse2))]
     #[cfg(not(any(target_arch = "powerpc", target_arch = "powerpc64")))]
     float_sum! {
-        f128, __addtf3, __subtf3, Quad, not(feature = "no-sys-f128");
+        f128, __addtf3, __subtf3, Quad, not(no_sys_f128);
     }
 
     #[cfg(f128_enabled)]
     #[cfg(any(target_arch = "powerpc", target_arch = "powerpc64"))]
     float_sum! {
-        f128, __addkf3, __subkf3, Quad, not(feature = "no-sys-f128");
+        f128, __addkf3, __subkf3, Quad, not(no_sys_f128);
     }
 }

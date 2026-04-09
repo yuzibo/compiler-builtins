@@ -1,7 +1,7 @@
 #![allow(unused_macros, unused_features)]
 #![cfg_attr(f128_enabled, feature(f128))]
 
-#[cfg_attr(x86_no_sse, allow(unused))]
+#[cfg_attr(x86_no_sse2, allow(unused))]
 use builtins_test::*;
 
 // This is approximate because of issues related to
@@ -53,7 +53,7 @@ macro_rules! pow {
     };
 }
 
-#[cfg(not(x86_no_sse))] // FIXME(i586): failure for powidf2
+#[cfg(not(x86_no_sse2))] // FIXME(i586): failure for powidf2
 pow! {
     f32, 1e-4, __powisf2, all();
     f64, 1e-12, __powidf2, all();
@@ -62,11 +62,11 @@ pow! {
 #[cfg(f128_enabled)]
 #[cfg(not(any(target_arch = "powerpc", target_arch = "powerpc64")))]
 pow! {
-    f128, 1e-36, __powitf2, not(feature = "no-sys-f128");
+    f128, 1e-36, __powitf2, not(no_sys_f128);
 }
 
 #[cfg(f128_enabled)]
 #[cfg(any(target_arch = "powerpc", target_arch = "powerpc64"))]
 pow! {
-    f128, 1e-36, __powikf2, not(feature = "no-sys-f128");
+    f128, 1e-36, __powikf2, not(no_sys_f128);
 }

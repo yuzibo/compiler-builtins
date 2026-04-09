@@ -301,15 +301,15 @@ macro_rules! float_impl {
             }
 
             fn eq_repr(self, rhs: Self) -> bool {
-                #[cfg(feature = "mangled-names")]
+                #[cfg(not(feature = "unmangled-names"))]
                 fn is_nan(x: $ty) -> bool {
-                    // When using mangled-names, the "real" compiler-builtins might not have the
-                    // necessary builtin (__unordtf2) to test whether `f128` is NaN.
+                    // When not using unmangled-names, the "real" compiler-builtins might not have
+                    // the necessary builtin (__unordtf2) to test whether `f128` is NaN.
                     // FIXME(f128): Remove once the nightly toolchain has the __unordtf2 builtin
                     // x is NaN if all the bits of the exponent are set and the significand is non-0
                     x.to_bits() & $ty::EXP_MASK == $ty::EXP_MASK && x.to_bits() & $ty::SIG_MASK != 0
                 }
-                #[cfg(not(feature = "mangled-names"))]
+                #[cfg(feature = "unmangled-names")]
                 fn is_nan(x: $ty) -> bool {
                     x.is_nan()
                 }
@@ -569,7 +569,7 @@ mod tests {
         }
         assert!(f32::NAN.is_qnan());
         // FIXME(rust-lang/rust#115567): x87 use in `is_snan` quiets the sNaN
-        if !cfg!(x86_no_sse) {
+        if !cfg!(x86_no_sse2) {
             assert!(f32::SNAN.is_snan());
         }
 
@@ -614,7 +614,7 @@ mod tests {
         }
         assert!(f64::NAN.is_qnan());
         // FIXME(rust-lang/rust#115567): x87 use in `is_snan` quiets the sNaN
-        if !cfg!(x86_no_sse) {
+        if !cfg!(x86_no_sse2) {
             assert!(f64::SNAN.is_snan());
         }
 

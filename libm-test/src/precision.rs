@@ -75,6 +75,7 @@ pub fn default_ulp(ctx: &CheckCtx) -> Option<u32> {
 
         // Operations that aren't required to be exact, but our implementations are.
         Bn::Cbrt => 0,
+        Bn::Hypot if ctx.fn_ident == Id::Hypot => 0,
 
         // Bessel functions have large inaccuracies.
         Bn::J0 | Bn::J1 | Bn::Y0 | Bn::Y1 | Bn::Jn | Bn::Yn => 8_000_000,
@@ -115,7 +116,7 @@ pub fn default_ulp(ctx: &CheckCtx) -> Option<u32> {
     let mut orig_ulp = ulp;
 
     // These have a separate implementation on i586 which is more accurate.
-    if cfg!(x86_no_sse) {
+    if cfg!(x86_no_sse2) {
         match ctx.fn_ident {
             Id::Exp => ulp = 1,
             Id::Exp2 => ulp = 1,
@@ -143,6 +144,7 @@ pub fn default_ulp(ctx: &CheckCtx) -> Option<u32> {
             Id::Asinh => ulp = 3,
             Id::Asinhf => ulp = 3,
             Id::Cbrt => ulp = 1,
+            Id::Hypot => ulp = 1,
             Id::Log1p => ulp = 2,
             Id::Log1pf => ulp = 2,
             Id::Tan => ulp = 2,
@@ -166,10 +168,11 @@ pub fn default_ulp(ctx: &CheckCtx) -> Option<u32> {
             Id::Cbrt => ulp = 2,
             Id::Cosh => ulp = 2,
             Id::Coshf => ulp = 2,
-            Id::Exp10 if cfg!(x86_no_sse) => ulp = 4,
-            Id::Exp10f if cfg!(x86_no_sse) => ulp = 4,
+            Id::Exp10 if cfg!(x86_no_sse2) => ulp = 4,
+            Id::Exp10f if cfg!(x86_no_sse2) => ulp = 4,
             Id::Exp2f => ulp = 1,
             Id::Expf => ulp = 1,
+            Id::Hypot => ulp = 1,
             Id::Tanh => ulp = 4,
             Id::Tanhf => ulp = 4,
             _ => (),
@@ -294,15 +297,6 @@ impl MaybeOverride<(f32,)> for SpecialCase {
 
 impl MaybeOverride<(f64,)> for SpecialCase {
     fn check_float<F: Float>(input: (f64,), actual: F, expected: F, ctx: &CheckCtx) -> CheckAction {
-        if cfg!(x86_no_sse)
-            && (ctx.base_name == BaseName::Rint || ctx.base_name == BaseName::Roundeven)
-            && (expected - actual).abs() <= F::ONE
-            && (expected - actual).abs() > F::ZERO
-        {
-            // Our rounding mode is incorrect.
-            return XFAIL("i586 rint rounding mode");
-        }
-
         if ctx.base_name == BaseName::J0 && input.0 < -1e300 {
             // Errors get huge close to -inf
             return XFAIL_NOCHECK;
@@ -533,7 +527,7 @@ fn int_float_common<F1: Float, F2: Float>(
 
     // Our bessel functions blow up with large N values
     if ctx.base_name == BaseName::Jn || ctx.base_name == BaseName::Yn {
-        if cfg!(x86_no_sse) {
+        if cfg!(x86_no_sse2) {
             // Precision is especially bad on i586, not worth checking.
             return XFAIL_NOCHECK;
         }
