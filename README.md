@@ -30,7 +30,7 @@ Test for ci_test \3 \4 \5 \6, 2044
 
 2042-01 v2 more
 
-k1 
+k1 v2 
 
 test it
  more

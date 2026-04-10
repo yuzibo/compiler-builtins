@@ -183,6 +183,11 @@ jobs:
       if: matrix.os == 'ubuntu-24.04' || contains(matrix.os, 'self-hosted')
       run: python3 etc/update-api-list.py --check
 
+    - name: Verify the Emulated and MAY_SKIP_LIBM_CI
+      run: |
+        echo "EMULATED=$EMULATED"
+        echo "MAY_SKIP_LIBM_CI=$MAY_SKIP_LIBM_CI"
+
     # Non-linux tests just use our raw script
     - name: Run locally
       if: ${{ env.RUN_IN_DOCKER != 'true' }}
