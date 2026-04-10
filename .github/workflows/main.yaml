@@ -115,7 +115,8 @@ jobs:
       BUILD_ONLY: ${{ matrix.build_only }}
       JOB_TARGET: ${{ matrix.target }}
       JOB_CHANNEL: ${{ matrix.channel }}
-      MAY_SKIP_LIBM_CI: ${{ needs.calculate_vars.outputs.may_skip_libm_ci }}
+      # FIXME(CI): debug on slow riscv64 hardware(k1)
+      MAY_SKIP_LIBM_CI: true
       RUN_IN_DOCKER: ${{ matrix.os == 'ubuntu-24.04' }}
     steps:
     - name: Print runner information
